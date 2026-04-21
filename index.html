@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>親親獸圖鑑</title>
+  <style>
+    /* ---------- Reset & Base ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-0: #0a0714;
+      --bg-1: #140b24;
+      --bg-2: #1d1236;
+      --bg-card: rgba(34, 18, 58, 0.65);
+      --border: rgba(255, 82, 168, 0.22);
+      --border-hover: rgba(255, 82, 168, 0.85);
+      --text-main: #f4e9ff;
+      --text-muted: #a79dc4;
+      --accent: #ff4d9e;
+      --accent-2: #8a5cff;
+      --accent-glow: rgba(255, 77, 158, 0.55);
+      --success: #5dffbf;
+      --danger: #ff6b6b;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow-glow: 0 0 24px var(--accent-glow);
+      --font: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, sans-serif;
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      color: var(--text-main);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, rgba(138, 92, 255, 0.22), transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, rgba(255, 77, 158, 0.18), transparent 55%),
+        linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    /* ---------- Layout ---------- */
+    .wrapper { max-width: 1280px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    /* ---------- Header ---------- */
+    header.site-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center;
+      font-size: 22px;
+      box-shadow: var(--shadow-glow);
+    }
+    .brand-title {
+      font-size: clamp(20px, 2.5vw, 26px);
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+    .brand-title span { color: var(--accent); }
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 4px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+    }
+    .search-box input {
+      width: 260px;
+      max-width: 60vw;
+      height: 42px;
+      padding: 0 14px 0 40px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(20, 11, 36, 0.8);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-box input:focus { border-color: var(--border-hover); box-shadow: var(--shadow-glow); }
+    .search-box::before {
+      content: "🔍";
+      position: absolute;
+      left: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 15px;
+      opacity: .8;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 42px;
+      padding: 0 18px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: transform .15s ease, box-shadow .2s ease, background .2s;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(255, 77, 158, 0.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(255, 77, 158, 0.5); }
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    .btn-ghost:hover { border-color: var(--border-hover); background: rgba(255, 77, 158, 0.08); }
+    .btn-danger { background: rgba(255, 107, 107, 0.15); border: 1px solid rgba(255, 107, 107, 0.4); color: #ffb3b3; }
+    .btn-danger:hover { background: rgba(255, 107, 107, 0.25); }
+
+    /* ---------- Stats bar ---------- */
+    .stats {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .stat-chip b { color: var(--accent); }
+
+    /* ---------- Grid ---------- */
+    .grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    }
+
+    .card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+      backdrop-filter: blur(6px);
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      box-shadow: 0 14px 40px rgba(255, 77, 158, 0.25);
+    }
+    .card .num {
+      position: absolute;
+      top: 10px; left: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(10, 7, 20, 0.75);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      z-index: 2;
+    }
+    .card .img-wrap {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.2)),
+        repeating-linear-gradient(45deg, rgba(138,92,255,.05) 0 10px, transparent 10px 20px);
+      display: grid; place-items: center;
+      overflow: hidden;
+    }
+    .card .img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .4s ease;
+    }
+    .card:hover .img-wrap img { transform: scale(1.05); }
+    .card .img-placeholder {
+      color: var(--text-muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .card .info {
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .card .info .name {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    .card .info .src {
+      font-size: 12px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ---------- Empty state ---------- */
+    .empty {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-muted);
+    }
+    .empty h3 { font-size: 20px; margin-bottom: 8px; color: var(--text-main); }
+
+    /* ---------- Modal ---------- */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(5, 3, 12, 0.85);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 20px;
+      animation: fadeIn .15s ease;
+    }
+    .modal-backdrop.open { display: flex; }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes slideUp { from { transform: translateY(16px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+    .modal {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #1a1030 0%, #120926 100%);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,.03) inset;
+      animation: slideUp .2s ease;
+    }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: grid; place-items: center;
+      font-size: 18px;
+      z-index: 5;
+      transition: background .15s;
+    }
+    .modal-close:hover { background: rgba(255, 77, 158, 0.3); }
+
+    .detail {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .detail .big-img {
+      background: radial-gradient(circle at 50% 40%, rgba(255, 77, 158, .18), transparent 60%), #0a0714;
+      display: grid; place-items: center;
+      padding: 30px;
+      border-right: 1px solid var(--border);
+      min-height: 360px;
+    }
+    .detail .big-img img {
+      max-width: 100%;
+      max-height: 420px;
+      border-radius: 14px;
+      filter: drop-shadow(0 10px 30px rgba(255, 77, 158, 0.25));
+    }
+    .detail .meta {
+      padding: 36px 32px;
+    }
+    .detail .meta .num {
+      display: inline-block;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .detail .meta h2 {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 22px;
+      letter-spacing: 1px;
+    }
+    .detail .meta .row {
+      display: flex;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px dashed var(--border);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .detail .meta .row:first-of-type { border-top: none; padding-top: 0; }
+    .detail .meta .row .label {
+      min-width: 64px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .detail .meta .row .value { flex: 1; word-break: break-word; }
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      margin: 2px 4px 2px 0;
+      font-size: 12px;
+      border-radius: 999px;
+      background: rgba(255, 77, 158, 0.12);
+      border: 1px solid var(--border);
+      color: var(--accent);
+    }
+    .detail .desc {
+      margin-top: 18px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #d3c8ea;
+    }
+
+    /* ---------- Form ---------- */
+    .form-modal { max-width: 640px; }
+    .form-body { padding: 32px; }
+    .form-body h2 { font-size: 22px; margin-bottom: 20px; }
+    .form-body h2 span { color: var(--accent); }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .field input[type="text"],
+    .field input[type="url"],
+    .field textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(10, 7, 20, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--border-hover); }
+    .field textarea { resize: vertical; min-height: 80px; }
+
+    .file-drop {
+      border: 1.5px dashed var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .file-drop:hover, .file-drop.dragover {
+      border-color: var(--border-hover);
+      background: rgba(255, 77, 158, 0.05);
+      color: var(--text-main);
+    }
+    .file-drop.has-file { color: var(--success); border-color: var(--success); }
+    .file-drop input[type="file"] { display: none; }
+    .file-drop .preview-img { max-width: 120px; max-height: 120px; margin: 8px auto 0; border-radius: 8px; display: block; }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* ---------- Footer ---------- */
+    footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* ---------- Toast ---------- */
+    .toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(10, 7, 20, 0.95);
+      border: 1px solid var(--border-hover);
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      color: var(--text-main);
+      box-shadow: var(--shadow-glow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 700px) {
+      .detail { grid-template-columns: 1fr; }
+      .detail .big-img { border-right: none; border-bottom: 1px solid var(--border); min-height: 280px; }
+      .detail .meta { padding: 24px; }
+      .detail .meta h2 { font-size: 24px; }
+      .search-box input { width: 160px; }
+      .btn { padding: 0 14px; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+      .wrapper { padding: 20px 14px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+  <!-- Header -->
+  <header class="site-header">
+    <div class="brand">
+      <div class="brand-logo">💋</div>
+      <div>
+        <div class="brand-title">親親寶貝 <span>圖鑑</span></div>
+        <div class="brand-sub">KISSKISS · BABY · DB</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="search-box">
+        <input id="searchInput" type="text" placeholder="搜尋名稱 / 來源 / 興趣..." />
+      </div>
+      <button class="btn btn-ghost" id="exportBtn" title="匯出目前所有角色 JSON">📤 匯出</button>
+      <button class="btn btn-primary" id="addBtn">＋ 投稿新增</button>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats">
+    <span class="stat-chip">總計：<b id="totalCount">0</b> 隻</span>
+    <span class="stat-chip">顯示中：<b id="shownCount">0</b> 隻</span>
+    <span class="stat-chip" id="localChip" style="display:none;">你的投稿：<b id="localCount">0</b> 隻</span>
+  </div>
+
+  <!-- Grid -->
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty" style="display:none;">
+    <h3>(｡•́︿•̀｡)</h3>
+    <p>沒有符合條件的角色，試試其他關鍵字吧~</p>
+  </div>
+
+  <footer>
+    Powered by 親親幫 · KissKiss Baby DB &copy; 2026 · 投稿角色儲存於本機瀏覽器
+  </footer>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal">
+    <button class="modal-close" data-close>✕</button>
+    <div class="detail" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- Add Form Modal -->
+<div class="modal-backdrop" id="formModal">
+  <div class="modal form-modal">
+    <button class="modal-close" data-close>✕</button>
+    <div class="form-body">
+      <h2>投稿<span>新角色</span></h2>
+      <form id="addForm">
+        <div class="field">
+          <label>編號 (自動，可修改)</label>
+          <input type="text" id="f_id" required maxlength="8" />
+        </div>
+        <div class="field">
+          <label>名稱 *</label>
+          <input type="text" id="f_name" required maxlength="30" />
+        </div>
+        <div class="field">
+          <label>來源</label>
+          <input type="text" id="f_source" placeholder="例如：蕭發仔 (親親幫幫主)" />
+        </div>
+        <div class="field">
+          <label>頻道連結</label>
+          <input type="url" id="f_channel" placeholder="https://..." />
+        </div>
+        <div class="field">
+          <label>興趣 (用逗號 , 分隔)</label>
+          <input type="text" id="f_interests" placeholder="收護貝費, 剪紙, 當太監" />
+        </div>
+        <div class="field">
+          <label>補充介紹</label>
+          <textarea id="f_desc" placeholder="(可略) 簡短介紹這個角色..."></textarea>
+        </div>
+        <div class="field">
+          <label>圖片</label>
+          <label class="file-drop" id="fileDrop">
+            <input type="file" id="f_image" accept="image/*" />
+            <div id="fileText">點擊或拖曳圖片到這裡上傳</div>
+            <img id="filePreview" class="preview-img" style="display:none;" alt="預覽" />
+          </label>
+          <div class="hint">上傳的圖片會以 Base64 存在瀏覽器中</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close>取消</button>
+          <button type="submit" class="btn btn-primary">確定投稿</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Character Data -->
+<script src="characters.js"></script>
+
+<script>
+/* =====================================================================
+ *  App Logic
+ * =====================================================================*/
+(function () {
+  const LS_KEY = "kkbabydb_user_characters_v1";
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // ---- Data layer ----
+  function loadUserChars() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }
+    catch { return []; }
+  }
+  function saveUserChars(arr) {
+    localStorage.setItem(LS_KEY, JSON.stringify(arr));
+  }
+  function allChars() {
+    const base = (window.CHARACTERS || []).map(c => ({ ...c, _local: false }));
+    const user = loadUserChars().map(c => ({ ...c, _local: true }));
+    // merge, user overrides base if same id
+    const map = new Map();
+    base.forEach(c => map.set(c.id, c));
+    user.forEach(c => map.set(c.id, c));
+    return [...map.values()].sort((a, b) => a.id.localeCompare(b.id));
+  }
+  function nextId() {
+    const ids = allChars().map(c => parseInt(c.id, 10)).filter(n => !isNaN(n));
+    const max = ids.length ? Math.max(...ids) : 0;
+    return String(max + 1).padStart(3, "0");
+  }
+
+  // ---- Render ----
+  function renderGrid(filter = "") {
+    const grid = $("#grid");
+    const list = allChars();
+    const q = filter.trim().toLowerCase();
+
+    const filtered = q
+      ? list.filter(c => {
+          const hay = [
+            c.id, c.name, c.source || "",
+            (c.interests || []).join(" "),
+            c.desc || ""
+          ].join(" ").toLowerCase();
+          return hay.includes(q);
+        })
+      : list;
+
+    grid.innerHTML = "";
+    filtered.forEach(c => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <span class="num">No.${c.id}</span>
+        <div class="img-wrap">
+          ${c.image
+            ? `<img src="${escapeAttr(c.image)}" alt="${escapeAttr(c.name)}" onerror="this.outerHTML='<div class=&quot;img-placeholder&quot;>圖片未載入<br>(${escapeAttr(c.image)})</div>'" />`
+            : `<div class="img-placeholder">尚無圖片</div>`}
+        </div>
+        <div class="info">
+          <div class="name">${escapeHtml(c.name)}</div>
+          <div class="src">${escapeHtml(c.source || "—")}</div>
+        </div>
+      `;
+      card.addEventListener("click", () => openDetail(c));
+      grid.appendChild(card);
+    });
+
+    $("#totalCount").textContent = list.length;
+    $("#shownCount").textContent = filtered.length;
+    const userCount = loadUserChars().length;
+    $("#localCount").textContent = userCount;
+    $("#localChip").style.display = userCount ? "inline-flex" : "none";
+    $("#empty").style.display = filtered.length ? "none" : "block";
+  }
+
+  function openDetail(c) {
+    const body = $("#detailBody");
+    const interests = (c.interests || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("") || "—";
+    const channelHtml = c.channel
+      ? `<a href="${escapeAttr(c.channel)}" target="_blank" rel="noopener">${escapeHtml(c.channel)}</a>`
+      : "—";
+    body.innerHTML = `
+      <div class="big-img">
+        ${c.image
+          ? `<img src="${escapeAttr(c.image)}" alt="${escapeAttr(c.name)}" onerror="this.outerHTML='<div style=\\'color:#a79dc4\\'>圖片未載入<br>(${escapeAttr(c.image)})</div>'" />`
+          : `<div style="color:#a79dc4">尚無圖片</div>`}
+      </div>
+      <div class="meta">
+        <span class="num">No.${c.id}${c._local ? " · 你的投稿" : ""}</span>
+        <h2>${escapeHtml(c.name)}</h2>
+        <div class="row"><div class="label">來源</div><div class="value">${escapeHtml(c.source || "—")}</div></div>
+        <div class="row"><div class="label">頻道</div><div class="value">${channelHtml}</div></div>
+        <div class="row"><div class="label">興趣</div><div class="value">${interests}</div></div>
+        ${c.desc ? `<div class="desc">${escapeHtml(c.desc)}</div>` : ""}
+        ${c._local ? `
+          <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+            <button class="btn btn-danger" id="delBtn">🗑 刪除此投稿</button>
+          </div>` : ""}
+      </div>
+    `;
+    $("#detailModal").classList.add("open");
+
+    if (c._local) {
+      $("#delBtn").addEventListener("click", () => {
+        if (!confirm("確定刪除這個投稿角色？")) return;
+        const arr = loadUserChars().filter(x => x.id !== c.id);
+        saveUserChars(arr);
+        closeModals();
+        renderGrid($("#searchInput").value);
+        toast("已刪除");
+      });
+    }
+  }
+
+  function closeModals() {
+    $$(".modal-backdrop").forEach(m => m.classList.remove("open"));
+  }
+
+  // ---- Add form ----
+  function openForm() {
+    $("#addForm").reset();
+    $("#f_id").value = nextId();
+    $("#fileText").textContent = "點擊或拖曳圖片到這裡上傳";
+    $("#filePreview").style.display = "none";
+    $("#fileDrop").classList.remove("has-file");
+    formImageData = null;
+    $("#formModal").classList.add("open");
+  }
+
+  let formImageData = null;
+  function readImageFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast("請選擇圖片檔"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast("圖片太大 (>2MB)，請壓縮後再上傳"); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      formImageData = e.target.result;
+      $("#filePreview").src = formImageData;
+      $("#filePreview").style.display = "block";
+      $("#fileText").textContent = file.name;
+      $("#fileDrop").classList.add("has-file");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function submitForm(e) {
+    e.preventDefault();
+    const id = $("#f_id").value.trim();
+    const name = $("#f_name").value.trim();
+    if (!id || !name) { toast("請填入編號與名稱"); return; }
+
+    const char = {
+      id,
+      name,
+      source: $("#f_source").value.trim(),
+      channel: $("#f_channel").value.trim(),
+      interests: $("#f_interests").value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
+      desc: $("#f_desc").value.trim(),
+      image: formImageData || ""
+    };
+
+    const users = loadUserChars();
+    const idx = users.findIndex(c => c.id === id);
+    if (idx >= 0) {
+      if (!confirm(`編號 ${id} 已存在，要覆蓋嗎？`)) return;
+      users[idx] = char;
+    } else {
+      users.push(char);
+    }
+    saveUserChars(users);
+    closeModals();
+    renderGrid($("#searchInput").value);
+    toast("投稿成功！");
+  }
+
+  // ---- Export ----
+  function exportJson() {
+    const merged = allChars().map(({ _local, ...rest }) => rest);
+    const blob = new Blob([JSON.stringify(merged, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "characters.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("已下載 characters.json");
+  }
+
+  // ---- Utils ----
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, m => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+  let toastTimer;
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  // ---- Init ----
+  document.addEventListener("DOMContentLoaded", () => {
+    renderGrid();
+
+    $("#searchInput").addEventListener("input", e => renderGrid(e.target.value));
+    $("#addBtn").addEventListener("click", openForm);
+    $("#exportBtn").addEventListener("click", exportJson);
+    $("#addForm").addEventListener("submit", submitForm);
+
+    $$(".modal-backdrop").forEach(m => {
+      m.addEventListener("click", e => {
+        if (e.target === m || e.target.matches("[data-close]") || e.target.closest("[data-close]")) {
+          closeModals();
+        }
+      });
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeModals();
+    });
+
+    // File input
+    const fileInput = $("#f_image");
+    const drop = $("#fileDrop");
+    fileInput.addEventListener("change", e => readImageFile(e.target.files[0]));
+    ["dragover", "dragenter"].forEach(ev =>
+      drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("dragover"); })
+    );
+    ["dragleave", "drop"].forEach(ev =>
+      drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("dragover"); })
+    );
+    drop.addEventListener("drop", e => {
+      if (e.dataTransfer.files[0]) readImageFile(e.dataTransfer.files[0]);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
